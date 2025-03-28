@@ -15,7 +15,7 @@ public class UserService {
     public User registerUser(String username, String password) {
         User user = new User();
         user.setUsername(username);
-        user.setPassword(password); // В реално приложение трябва да хеширате паролата
+        user.setPassword(password);
         return userRepository.save(user);
     }
 

@@ -55,7 +55,7 @@
             :key="index"
             :class="['message', message.isFromCurrentUser ? 'sent' : 'received']"
         >
-          <!-- Аватар винаги отляво -->
+
           <img v-if="message.avatar" :src="message.avatar" alt="User avatar" class="message-avatar">
 
           <div class="message-content">
@@ -177,6 +177,11 @@ export default {
             this.isLoggedIn = true;
             localStorage.setItem("username", this.username);
 
+
+            if (result.sessionId) {
+              localStorage.setItem("sessionId", result.sessionId);
+            }
+
             if (result.avatar) {
               this.selectedAvatar = result.avatar;
               localStorage.setItem("avatar", result.avatar);
@@ -189,10 +194,50 @@ export default {
         } catch (error) {
           alert("Login failed: " + error);
         }
-      } else {
-        alert("Please enter both username and password!");
       }
     },
+    async logout() {
+      try {
+        const sessionId = localStorage.getItem('sessionId');
+
+        console.log('Attempting logout with sessionId:', sessionId);
+
+        const response = await fetch('http://localhost:8080/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionId}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+
+        console.log('Logout response status:', response.status);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Logout failed:', errorData);
+          throw new Error(errorData.message || 'Logout failed');
+        }
+
+
+        localStorage.removeItem('sessionId');
+        localStorage.removeItem('username');
+        localStorage.removeItem('avatar');
+        this.isLoggedIn = false;
+
+        if (this.stompClient) {
+          this.stompClient.deactivate();
+        }
+
+
+        this.isLogin = true;
+
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert(error.message || 'Failed to logout');
+      }
+    }
+    ,
     connect() {
       const socket = new SockJS('http://localhost:8080/chat-websocket');
       this.stompClient = new Client({
@@ -206,7 +251,7 @@ export default {
 
           this.stompClient.subscribe("/topic/messages", (message) => {
             const msg = JSON.parse(message.body);
-            if (msg.username !== this.username) { // Добавяме само ако не е от нас
+            if (msg.username !== this.username) {
               msg.isFromCurrentUser = false;
               this.messageHistory.push(msg);
             }
@@ -229,10 +274,10 @@ export default {
         content: this.newMessage,
         avatar: localStorage.getItem("avatar") || "",
         timestamp: new Date().toLocaleTimeString(),
-        isFromCurrentUser: true // Маркираме изпратените съобщения
+        isFromCurrentUser: true
       };
 
-      this.messageHistory.push(message); // Добавяме веднага към историята
+      this.messageHistory.push(message);
 
       this.stompClient.publish({
         destination: "/app/send",

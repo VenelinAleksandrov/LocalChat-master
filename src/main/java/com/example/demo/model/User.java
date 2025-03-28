@@ -22,7 +22,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<ChatMessage> messages = new ArrayList<>();
 
-    // Конструктори
+
     public User() {}
 
     public User(String username, String password, String avatar) {
@@ -31,7 +31,7 @@ public class User {
         this.avatar = avatar;
     }
 
-    // Геттери и сеттери
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -46,4 +46,7 @@ public class User {
 
     public List<ChatMessage> getMessages() { return messages; }
     public void setMessages(List<ChatMessage> messages) { this.messages = messages; }
+
+    public void setSessionId(String sessionId) {
+    }
 }

@@ -17,7 +17,7 @@ public class ChatMessage {
     private LocalDateTime timestamp;
     private String avatar;
 
-    // Конструктори
+
     public ChatMessage() {}
 
     public ChatMessage(User user, String content) {
@@ -27,7 +27,7 @@ public class ChatMessage {
         this.avatar = user.getAvatar();
     }
 
-    // Геттери и сеттери
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
